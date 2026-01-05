@@ -1,3 +1,5 @@
+COMPONENTS_REQUIRE_QT(5 Core)
+
 COMPONENTS_CONFIGURE_COMPONENT(ExtraClasses
-    Qt::Core
+    Qt5::Core
 )
