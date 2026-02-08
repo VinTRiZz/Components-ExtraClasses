@@ -3,12 +3,16 @@
 #include <mutex>
 #include <map>
 
+#ifdef QT_CORE_LIB
 #include <QString>
 #include <QStringList>
+#endif // QT_CORE_LIB
 
 namespace ExtraClasses
 {
 
+
+#ifdef QT_CORE_LIB
 class AtomicString
 {
 public:
@@ -36,5 +40,6 @@ private:
 
     QString getData() const;
 };
+#endif // QT_CORE_LIB
 
 }

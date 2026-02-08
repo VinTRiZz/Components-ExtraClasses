@@ -3,12 +3,16 @@
 #include <mutex>
 #include <map>
 
+#ifdef QT_CORE_LIB
 #include <QString>
 #include <QStringList>
+#endif // QT_CORE_LIB
+
 
 namespace ExtraClasses
 {
 
+#ifdef QT_CORE_LIB
 AtomicString::AtomicString()
 {
     this->data = QString();
@@ -146,5 +150,6 @@ AtomicString & AtomicString::operator =(const QString &data)
     mx.unlock();
     return *this;
 }
+#endif // QT_CORE_LIB
 
 }
