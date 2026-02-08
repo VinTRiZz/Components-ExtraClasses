@@ -1,5 +1,7 @@
-COMPONENTS_REQUIRE_QT(5 Core)
-
-COMPONENTS_CONFIGURE_COMPONENT(ExtraClasses
-    Qt5::Core
-)
+if (COMPONENTS_IS_ENABLED_QT)
+    COMPONENTS_CONFIGURE_COMPONENT(ExtraClasses
+        Qt5::Core
+    )
+else()
+    COMPONENTS_CONFIGURE_COMPONENT(ExtraClasses)
+endif()
