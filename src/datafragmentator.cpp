@@ -33,8 +33,8 @@ uint64_t DataInfo::getActualSize() const
 
 void DataInfo::addFragment(DataFragment &&data)
 {
-    m_actualSize.fetch_add(data.data.size(), std::memory_order_release);
     m_fragmentMx.lock();
+    m_actualSize.fetch_add(data.data.size(), std::memory_order_release);
     m_fragments.emplace(std::move(data));
     m_fragmentMx.unlock();
 }
