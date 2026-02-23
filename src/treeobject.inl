@@ -73,7 +73,12 @@ bool TreeNode<DataT>::callBackwardRecursive(const recursiveConstCallback_t& func
 
 template <typename DataT>
 void TreeNode<DataT>::setParent(const TreeNodePtr<DataT>& pParent) {
+    auto pSelfParent = m_parent.lock();
+    if (pSelfParent) {
+        pSelfParent->removeNode(this->shared_from_this());
+    }
     m_parent = pParent;
+    pParent->addNode(this->shared_from_this());
 }
 
 template <typename DataT>
@@ -108,8 +113,18 @@ template <typename DataT>
 void TreeNode<DataT>::addNode(const DataT& nodeData) {
     auto pNode = std::make_shared<TreeNode<DataT> >(this->shared_from_this());
     pNode->setData(nodeData);
-    std::visit([pNode](auto& cont){
-        cont.push_back(pNode);
+    return addNode(pNode);
+}
+
+template <typename DataT>
+bool TreeNode<DataT>::removeNode(TreeNodePtr<DataT> pNode) {
+    return std::visit([pNode, this](auto& cont){
+        auto targetPos = std::find(cont.begin(), cont.end(), pNode);
+        if (targetPos != cont.end()) {
+            cont.erase(targetPos);
+            return true;
+        }
+        return false;
     }, m_children);
 }
 
@@ -127,15 +142,15 @@ bool TreeNode<DataT>::removeNode(std::size_t index) {
 }
 
 template <typename DataT>
+bool TreeNode<DataT>::removeNode(const DataT &value) {
+    return removeNode(findNode(value));
+}
+
+template <typename DataT>
 void TreeNode<DataT>::clearNodes() {
     return std::visit([this](auto& cont){
         cont.clear();
     }, m_children);
-}
-
-template <typename DataT>
-void TreeNode<DataT>::clearData() {
-    setData({});
 }
 
 template <typename DataT>
@@ -144,6 +159,20 @@ TreeNodePtr<DataT> TreeNode<DataT>::getNode(std::size_t index) const {
         if (index < cont.size()) {
             auto targetPos = cont.begin();
             std::advance(targetPos, index);
+            return *targetPos;
+        }
+        return {};
+    }, m_children);
+}
+
+template<typename DataT>
+TreeNodePtr<DataT> TreeNode<DataT>::findNode(const DataT& value) const
+{
+    return std::visit([&value, this](auto& cont) -> TreeNodePtr<DataT> {
+        auto targetPos = std::find_if(cont.begin(), cont.end(), [&value](auto& pNode){
+            return (pNode->getData() == value);
+        });
+        if (targetPos != cont.end()) {
             return *targetPos;
         }
         return {};
@@ -163,6 +192,19 @@ std::size_t TreeNode<DataT>::getDepth() const
     }
     return depth;
 }
+
+template<typename DataT>
+std::size_t TreeNode<DataT>::getTotalChildCount() const
+{
+    std::size_t count {0};
+    callRecursive([&count](auto& pNode) -> bool {
+        ++count;
+        return false;
+    });
+    --count; // Remove self from count
+    return count;
+}
+
 
 template <typename DataT>
 void TreeNode<DataT>::setData(const DataT& iData) {
