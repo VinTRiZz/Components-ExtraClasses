@@ -31,6 +31,7 @@ TEST(DataFragmentator, Regular) {
     df.registerData(1, dataSize);
     auto pData = df.getData(1);
     ASSERT_TRUE(pData != nullptr);
+    ASSERT_FALSE(pData->isValid());
 
     std::vector< std::vector<uint8_t> > splittedData;
     uint64_t curpos {};
@@ -58,4 +59,17 @@ TEST(DataFragmentator, Regular) {
         ASSERT_EQ(splittedData[curpos], dataPart.data);
         ++curpos;
     }
+
+    // Compile check
+    ASSERT_TRUE(pData->compile());
+    ASSERT_EQ(data, pData->getFragments().begin()->data);
+
+    // Split check
+    const auto splitChunkSize {100};
+    ASSERT_TRUE(pData->split(splitChunkSize));
+    ASSERT_EQ(dataSize / splitChunkSize, pData->getFragments().size());
+
+    // Compile after splitting check (data equality check)
+    ASSERT_TRUE(pData->compile());
+    ASSERT_EQ(data, pData->getFragments().begin()->data);
 }

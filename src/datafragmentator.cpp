@@ -6,7 +6,7 @@ namespace ExtraClasses
 {
 
 bool DataFragment::operator <(const DataFragment &odf) const {
-    return (id < odf.id);
+    return (beginBytePos < odf.beginBytePos);
 }
 
 DataInfo::DataInfo(DataId_t id, uint64_t dataSize) :
@@ -46,7 +46,7 @@ const std::set<DataFragment> &DataInfo::getFragments() const
 
 bool DataInfo::isValid() const
 {
-    return (getSize() == getActualSize());
+    return (m_size != 0) && (m_size == getActualSize());
 }
 
 bool DataInfo::compile()
@@ -54,9 +54,22 @@ bool DataInfo::compile()
     if (!isValid()) {
         return false;
     }
+    std::lock_guard<std::mutex> lock(m_fragmentMx);
+    if (m_fragments.size() == 1) {
+        return true;
+    }
+    auto firstPart = std::move(*m_fragments.begin());
+    m_fragments.erase(firstPart);
 
-    // TODO: Connect all data
-    return false;
+    for (auto& fragment :  m_fragments) {
+        firstPart.data.reserve(fragment.data.size());
+        std::copy_n(fragment.data.data(), fragment.data.size(), std::back_inserter(firstPart.data));
+    }
+    m_fragments.clear();
+
+    auto isCompilationSucceed = (firstPart.data.size() == getActualSize());
+    m_fragments.emplace(std::move(firstPart));
+    return isCompilationSucceed;
 }
 
 bool DataInfo::split(uint64_t splitDataSize)
@@ -64,9 +77,30 @@ bool DataInfo::split(uint64_t splitDataSize)
     if (!isValid()) {
         return false;
     }
+    if (!compile()) {
+        return false;
+    }
 
-    // TODO: Split all data into parts
-    return false;
+    auto firstPart = std::move(*m_fragments.begin());
+    m_fragments.erase(firstPart);
+
+    uint64_t curpos {};
+    const auto dataSize = firstPart.data.size();
+    while (curpos < dataSize) {
+        DataFragment splittedDataPart;
+        auto deltaSize = std::min(splitDataSize, dataSize - curpos);
+        splittedDataPart.data.reserve(deltaSize);
+        std::copy_n(firstPart.data.data() + curpos, deltaSize, std::back_inserter(splittedDataPart.data));
+        splittedDataPart.beginBytePos = curpos;
+        curpos += deltaSize;
+        m_fragments.emplace(std::move(splittedDataPart));
+    }
+
+    std::size_t totalDataSize {0};
+    for (const auto& fragment : m_fragments) {
+        totalDataSize += fragment.data.size();
+    }
+    return (totalDataSize == getActualSize());
 }
 
 bool DataInfo::operator <(const DataInfo &odi) const {

@@ -20,7 +20,7 @@ using DataId_t = uint64_t;
  */
 struct DataFragment
 {
-    DataId_t id {};
+    DataId_t beginBytePos {};
     std::vector<uint8_t> data;
 
     bool operator <(const DataFragment& odf) const;
@@ -50,6 +50,7 @@ public:
     /**
      * @brief compile   Connects all data fragments into one item
      * @return          true if succeed
+     * @note            After succeed, there will be only one fragment of data, if it exist
      */
     bool compile();
 
