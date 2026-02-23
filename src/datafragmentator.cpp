@@ -119,6 +119,15 @@ void DataFragmentator::registerData(DataId_t dataId, uint64_t dataSize)
     m_dataRegisterMx.unlock();
 }
 
+void DataFragmentator::unregisterData(DataId_t dataId)
+{
+    std::lock_guard<std::mutex> lock(m_dataRegisterMx);
+    auto targetData = std::find_if(m_data.begin(), m_data.end(), [dataId](auto& dataInfo){
+        return (dataInfo->getId() == dataId);
+    });
+    m_data.erase(targetData);
+}
+
 bool DataFragmentator::addFragment(DataId_t dataId, DataFragment &&data)
 {
     decltype(m_data)::iterator targetData;

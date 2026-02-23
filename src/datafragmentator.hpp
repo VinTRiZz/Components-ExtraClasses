@@ -85,6 +85,7 @@ class DataFragmentator
 {
 public:
     void registerData(DataId_t dataId, uint64_t dataSize);
+    void unregisterData(DataId_t dataId);
     bool addFragment(DataId_t dataId, DataFragment&& data);
     DataInfoPtr getData(uint64_t dataId);
 

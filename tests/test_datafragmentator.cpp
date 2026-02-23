@@ -33,6 +33,11 @@ TEST(DataFragmentator, Regular) {
     ASSERT_TRUE(pData != nullptr);
     ASSERT_FALSE(pData->isValid());
 
+    df.registerData(2, dataSize);
+    df.unregisterData(2);
+    auto pDataTest = df.getData(2);
+    ASSERT_TRUE(pDataTest == nullptr);
+
     std::vector< std::vector<uint8_t> > splittedData;
     uint64_t curpos {};
     while (curpos < dataSize) {
