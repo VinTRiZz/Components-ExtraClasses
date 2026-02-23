@@ -8,21 +8,19 @@
 
 namespace ExtraClasses
 {
-    
-class TreeNode;
-using TreeNodePtr = std::shared_ptr<TreeNode>;
-using TreeNodeConstPtr = std::shared_ptr<const TreeNode>;
-using TreeParentNodePtr = std::weak_ptr<TreeNode>;
+template <typename DataT> class TreeNode;
+template <typename DataT> using TreeNodePtr = std::shared_ptr<TreeNode<DataT> >;
+template <typename DataT> using TreeNodeConstPtr = std::shared_ptr<const TreeNode<DataT> >;
+template <typename DataT> using TreeParentNodePtr = std::weak_ptr<TreeNode<DataT> >;
 
-// TODO: Задавать тип контейнера (вектор / лист)
-class TreeNode : public std::enable_shared_from_this<TreeNode>
+template <typename DataT>
+class TreeNode : public std::enable_shared_from_this<TreeNode<DataT> >
 {
 public:
-    explicit TreeNode(const TreeNodePtr& pParent = {});
-    ~TreeNode();
-    
-    using recursiveCallback_t = std::function<bool(const TreeNodePtr&)>;
-    using recursiveConstCallback_t = std::function<bool(const TreeNodeConstPtr&)>;
+    explicit TreeNode(const TreeNodePtr<DataT>& pParent = {});
+
+    using recursiveCallback_t = std::function<bool(const TreeNodePtr<DataT>&)>;
+    using recursiveConstCallback_t = std::function<bool(const TreeNodeConstPtr<DataT>&)>;
     
     // Function meturn true if must stop calling after processing node
     bool callRecursive(const recursiveCallback_t& func);
@@ -30,36 +28,41 @@ public:
     bool callRecursive(const recursiveConstCallback_t& func) const;
     bool callBackwardRecursive(const recursiveConstCallback_t& func) const;
     
-    void setParent(const TreeNodePtr& pParent);
+    void setParent(const TreeNodePtr<DataT>& pParent);
     
     std::size_t getNodeCount() const;
     
     bool addNode(std::size_t beforeIndex);
-    void addNode(const TreeNodePtr& pNode);
+    void addNode(const TreeNodePtr<DataT>& pNode);
     bool removeNode(std::size_t index);
     void clearNodes();
     void clearData();
-    TreeNodePtr getNode(std::size_t index) const;
+    TreeNodePtr<DataT> getNode(std::size_t index) const;
     
-    void setData(const std::string& iData);
-    std::string getData() const;
+    void setData(const DataT& iData);
+    DataT getData() const;
     
 private:
-    TreeParentNodePtr m_parent;
-    std::list<TreeNodePtr> m_children;
+    TreeParentNodePtr<DataT> m_parent;
+    std::list<TreeNodePtr<DataT> > m_children;
     
-    std::string m_data;
+    DataT m_data;
 };
-    
-    
+
+/**
+ * @brief The TreeObject class Tree object for any data type
+ */
+template <typename DataT>
 class TreeObject
 {
 public:
     TreeObject();
 
-    TreeNodePtr getRootNode() const;
+    TreeNodePtr<DataT> getRootNode() const;
     
 private:
-    TreeNodePtr m_rootNode;
+    TreeNodePtr<DataT> m_rootNode;
 };
 }
+
+#include "treeobject.inl"
