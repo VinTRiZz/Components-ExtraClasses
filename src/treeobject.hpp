@@ -3,7 +3,8 @@
 #include <memory>
 #include <vector>
 #include <list>
-#include <string>
+#include <vector>
+#include <variant>
 #include <functional>
 
 namespace ExtraClasses
@@ -34,19 +35,30 @@ public:
     
     bool addNode(std::size_t beforeIndex);
     void addNode(const TreeNodePtr<DataT>& pNode);
+    void addNode(const DataT& nodeData);
     bool removeNode(std::size_t index);
     void clearNodes();
     void clearData();
     TreeNodePtr<DataT> getNode(std::size_t index) const;
+    std::size_t getDepth() const;
     
     void setData(const DataT& iData);
     DataT getData() const;
+
+    /**
+     * @brief setupAsList Convert internal data structure into list holding. Added for performance needs (many children or equal)
+     */
+    void setupAsList();
+
+    /**
+     * @brief setupAsList Convert internal data structure into vector holding. Added for performance needs (many children or equal)
+     */
+    void setupAsVector();
     
 private:
     TreeParentNodePtr<DataT> m_parent;
-    std::list<TreeNodePtr<DataT> > m_children;
-    
-    DataT m_data;
+    std::variant< std::list<TreeNodePtr<DataT> >, std::vector<TreeNodePtr<DataT> > > m_children;
+    DataT m_data {};
 };
 
 /**
