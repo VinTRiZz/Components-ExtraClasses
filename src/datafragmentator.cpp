@@ -3,9 +3,6 @@
 #include <algorithm>
 #include <numeric>
 
-#warning "DEBUG"
-#include <iostream>
-
 namespace ExtraClasses
 {
 

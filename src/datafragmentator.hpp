@@ -60,7 +60,7 @@ public:
      * @param splitDataSize Size of one fragment
      * @return              true if succeed
      */
-    bool split(uint64_t splitDataSize);
+    bool split(uint64_t splitDataSize); // TODO: Modify using allocators? --> split without allocating extra memory
     static std::vector<std::vector<uint8_t> > split(const std::vector<uint8_t>& data, uint64_t splitDataSize);
 
     bool operator <(const DataInfo& odi) const;
