@@ -53,6 +53,7 @@ public:
      * @note            After succeed, there will be only one fragment of data, if it exist
      */
     bool compile();
+    static std::vector<uint8_t> compile(const std::vector<std::vector<uint8_t> >& dataVectors);
 
     /**
      * @brief split         Reverse of compile method. Splits data into fragments
@@ -60,6 +61,7 @@ public:
      * @return              true if succeed
      */
     bool split(uint64_t splitDataSize);
+    static std::vector<std::vector<uint8_t> > split(const std::vector<uint8_t>& data, uint64_t splitDataSize);
 
     bool operator <(const DataInfo& odi) const;
     bool operator ==(DataId_t id) const;

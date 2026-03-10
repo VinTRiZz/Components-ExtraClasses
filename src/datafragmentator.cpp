@@ -1,6 +1,10 @@
 #include "datafragmentator.hpp"
 
 #include <algorithm>
+#include <numeric>
+
+#warning "DEBUG"
+#include <iostream>
 
 namespace ExtraClasses
 {
@@ -72,6 +76,28 @@ bool DataInfo::compile()
     return isCompilationSucceed;
 }
 
+std::vector<uint8_t> DataInfo::compile(const std::vector<std::vector<uint8_t> > &dataVectors)
+{
+    std::vector<uint8_t> res;
+
+    auto dataBeg = dataVectors.data();
+    auto currentVect = dataBeg;
+    while ((currentVect - dataBeg) < dataVectors.size()) {
+        res.reserve(currentVect->size());
+        std::copy_n(currentVect->data(), currentVect->size(), std::back_inserter(res));
+        ++currentVect;
+    }
+
+    auto totalSize = std::accumulate(dataVectors.begin(), dataVectors.end(), 0, [](auto curVal, auto& vect){
+        return (curVal + vect.size());
+    });
+    if (res.size() != totalSize) {
+        res.clear();
+    }
+
+    return res;
+}
+
 bool DataInfo::split(uint64_t splitDataSize)
 {
     if (!isValid()) {
@@ -87,13 +113,15 @@ bool DataInfo::split(uint64_t splitDataSize)
     uint64_t curpos {};
     const auto dataSize = firstPart.data.size();
     while (curpos < dataSize) {
-        DataFragment splittedDataPart;
         auto deltaSize = std::min(splitDataSize, dataSize - curpos);
+
+        DataFragment splittedDataPart;
         splittedDataPart.data.reserve(deltaSize);
         std::copy_n(firstPart.data.data() + curpos, deltaSize, std::back_inserter(splittedDataPart.data));
         splittedDataPart.beginBytePos = curpos;
-        curpos += deltaSize;
         m_fragments.emplace(std::move(splittedDataPart));
+
+        curpos += deltaSize;
     }
 
     std::size_t totalDataSize {0};
@@ -101,6 +129,36 @@ bool DataInfo::split(uint64_t splitDataSize)
         totalDataSize += fragment.data.size();
     }
     return (totalDataSize == getActualSize());
+}
+
+std::vector<std::vector<uint8_t> > DataInfo::split(const std::vector<uint8_t> &data, uint64_t splitDataSize)
+{
+    std::vector< std::vector<uint8_t> > res;
+    res.reserve(data.size() / splitDataSize);
+
+    const auto dataSize = data.size();
+    auto dataEnd = data.data() + dataSize;
+    auto curDataStart = data.data();
+
+    while (curDataStart < dataEnd) {
+        auto deltaSize = std::min(splitDataSize, uint64_t(dataEnd - curDataStart));
+
+        std::vector<uint8_t> dataPart;
+        dataPart.reserve(deltaSize);
+        std::copy_n(curDataStart, deltaSize, std::back_inserter(dataPart));
+        curDataStart += deltaSize;
+
+        res.push_back(dataPart);
+    }
+
+    std::size_t totalDataSize {0};
+    for (const auto& fragment : res) {
+        totalDataSize += fragment.size();
+    }
+    if (totalDataSize != data.size()) {
+        res.clear();
+    }
+    return res;
 }
 
 bool DataInfo::operator <(const DataInfo &odi) const {

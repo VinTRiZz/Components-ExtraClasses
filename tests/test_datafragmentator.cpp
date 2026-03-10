@@ -78,3 +78,39 @@ TEST(DataFragmentator, Regular) {
     ASSERT_TRUE(pData->compile());
     ASSERT_EQ(data, pData->getFragments().begin()->data);
 }
+
+
+TEST(DataFragmentator, StaticFunctions) {
+    const uint64_t dataSize = 2000;
+    std::vector<uint8_t> data;
+    data.reserve(dataSize);
+    for (int i = 0; i < dataSize; ++i) {
+        data.push_back(generateNumber(0, 255));
+    }
+
+    std::vector< std::vector<uint8_t> > splittedData;
+    uint64_t curpos {};
+    while (curpos < dataSize) {
+        std::vector<uint8_t> splittedDataPart;
+        auto deltaSize = std::min(generateNumber(1, 500), dataSize - curpos);
+        splittedDataPart.reserve(deltaSize);
+        std::copy_n(data.data() + curpos, deltaSize, std::back_inserter(splittedDataPart));
+        curpos += deltaSize;
+        splittedData.emplace_back(std::move(splittedDataPart));
+    }
+
+    // Compile check
+    auto compiledData = ExtraClasses::DataInfo::compile(splittedData);
+    ASSERT_EQ(dataSize, compiledData.size());
+    ASSERT_EQ(data, compiledData);
+
+    // Split check
+    const auto splitChunkSize {100};
+    auto splittedCheckData = ExtraClasses::DataInfo::split(data, splitChunkSize);
+    ASSERT_EQ(data.size() /  splitChunkSize, splittedCheckData.size());
+
+    // Compile after splitting check (data equality check)
+    compiledData = ExtraClasses::DataInfo::compile(splittedCheckData);
+    ASSERT_EQ(dataSize, compiledData.size());
+    ASSERT_EQ(data, compiledData);
+}
