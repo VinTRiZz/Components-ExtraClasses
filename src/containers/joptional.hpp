@@ -26,6 +26,12 @@ public:
     auto operator=(const ValueT& val) {
         return std::optional<ValueT>::operator=(val);
     }
+    auto operator=(const nlohmann::json& iJson) {
+        if (iJson.is_null()) {
+            return std::optional<ValueT>::operator=(std::nullopt);
+        }
+        return std::optional<ValueT>::operator=(iJson);
+    }
 
     ValueT& operator+(const ValueT& val) {
         if (!has_value()) {
