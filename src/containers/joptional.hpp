@@ -42,10 +42,10 @@ public:
     }
 
     bool operator==(const ValueT& val) const {
-        if (!has_value()) {
+        if (!has_value() || !has_value()) {
             return false;
         }
-        return (has_value() && value() == val);
+        return value() == val;
     }
     bool operator==(const JOptional<ValueT>& optVal) const {
         if (!has_value() || !optVal.has_value()) {
