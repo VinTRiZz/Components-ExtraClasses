@@ -6,62 +6,77 @@
 namespace ExtraClasses
 {
 
-template <typename T>
-class JOptional final : public std::optional<T>
+template <typename ValueT>
+class JOptional : public std::optional<ValueT>
 {
-    T butaforValue {}; // Used to return in tryGetValue
+    // Extra metaclasses
+    template <typename T, typename = void>
+    struct is_compareAvailable : std::false_type {};
+
+    template <typename T>
+    struct is_compareAvailable<T, std::void_t<decltype(std::declval<T>().operator<(T{}))>> : std::true_type {};
+
 public:
-    using std::optional<T>::has_value;
-    using std::optional<T>::operator=;
-    using std::optional<T>::optional;
-    using std::optional<T>::value;
+    using type = ValueT;
+    using std::optional<ValueT>::has_value;
+    using std::optional<ValueT>::optional;
+    using std::optional<ValueT>::value;
     operator bool() = delete;
 
-    const T& tryGetValue() const {
-        if (std::optional<T>::has_value()) {
-            return std::optional<T>::value();
+    auto operator=(const ValueT& val) {
+        return std::optional<ValueT>::operator=(val);
+    }
+
+    ValueT& operator+(const ValueT& val) {
+        if (!has_value()) {
+            return ValueT{} + val;
         }
-        return butaforValue;
+        return value() + val;
     }
 
-    auto operator=(const T& val) {
-        return std::optional<T>::operator=(val);
-    }
-
-    auto operator+(const T& val) {
-        if (!std::optional<T>::has_value()) {
-            std::optional<T>::operator=(T());
-            std::optional<T>::value() +(val);
-        } else {
-            std::optional<T>::operator=(std::optional<T>::value() + val);
+    ValueT& operator+=(const ValueT& val) {
+        if (!has_value()) {
+            return ValueT{} += val;
         }
-        return *this;
+        return value() += val;
     }
 
-    auto operator+=(const T& val) {
-        if (!std::optional<T>::has_value()) {
-            std::optional<T>::operator=(T{});
-            std::optional<T>::value() +=val;
-        } else {
-            std::optional<T>::operator=(std::optional<T>::value() += val);
+    bool operator==(const ValueT& val) const {
+        if (!has_value()) {
+            return false;
         }
-        return *this;
+        return (has_value() && value() == val);
+    }
+    bool operator==(const JOptional<ValueT>& optVal) const {
+        if (!has_value() || !optVal.has_value()) {
+            return false;
+        }
+        return value() == optVal.value();
     }
 
-    operator nlohmann::json() {
-        if (std::optional<T>::has_value()) {
-            return std::optional<T>::value();
+    template <typename vT = ValueT, typename = std::void_t<is_compareAvailable<ValueT> > >
+    bool operator<(const JOptional<ValueT>& _ohdl) const {
+        if (!has_value() || !_ohdl.has_value()) {
+            return false;
+        }
+        return value() < _ohdl.value();
+    }
+
+    operator nlohmann::json() const {
+        if (std::optional<ValueT>::has_value()) {
+            return std::optional<ValueT>::value();
         }
         return {};
     }
 
-    operator T() {
-        if (std::optional<T>::has_value()) {
-            return std::optional<T>::value();
+    operator ValueT() const {
+        if (std::optional<ValueT>::has_value()) {
+            return std::optional<ValueT>::value();
         }
         return {};
     }
 
+    // Debug
     friend std::ostream& operator<<(std::ostream& os, const JOptional& jOptional) {
         if (jOptional.has_value()) {
             os << jOptional.value();
