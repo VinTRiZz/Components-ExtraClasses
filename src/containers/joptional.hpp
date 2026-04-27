@@ -1,85 +1,107 @@
 #pragma once
 
+#include <memory>
 #include <optional>
 #include <nlohmann/json.hpp>
 
 namespace ExtraClasses
 {
 
-template <typename ValueT>
-class JOptional : public std::optional<ValueT>
+template <
+    typename ValueT,
+    typename = std::void_t< // TODO: Workaround this mess
+        std::conjunction<
+            std::is_default_constructible<ValueT>,
+            std::is_copy_constructible<ValueT> > > >
+class JOptional
 {
-    // Extra metaclasses
-    template <typename T, typename = void>
-    struct is_compareAvailable : std::false_type {};
-
-    template <typename T>
-    struct is_compareAvailable<T, std::void_t<decltype(std::declval<T>().operator<(T{}))>> : std::true_type {};
-
+    std::shared_ptr<ValueT> m_pValue;
 public:
     using type = ValueT;
-    using std::optional<ValueT>::has_value;
-    using std::optional<ValueT>::optional;
-    using std::optional<ValueT>::value;
-    operator bool() = delete;
-
-    auto operator=(const ValueT& val) {
-        return std::optional<ValueT>::operator=(val);
+    JOptional() = default;
+    JOptional(const std::nullopt_t&) {} // std::optional workaround
+    JOptional(const ValueT& iv) :
+        m_pValue {std::make_shared<ValueT>(iv)} {
     }
-    auto operator=(const nlohmann::json& iJson) {
+
+    // std::optional compatibility
+    ValueT& operator*() {
+        return *m_pValue;
+    }
+    const ValueT& operator*() const {
+        return *m_pValue;
+    }
+    ValueT* operator->() {
+        return m_pValue.get();
+    }
+    const ValueT* operator->() const {
+        return m_pValue.get();
+    }
+    bool has_value() const {
+        return (nullptr != m_pValue);
+    }
+    ValueT& value() {
+        return *m_pValue;
+    }
+    const ValueT& value() const {
+        return *m_pValue;
+    }
+    JOptional& operator=(const ValueT& iv) {
+        if (!m_pValue) {
+            m_pValue = std::make_shared<ValueT>();
+        }
+        *m_pValue = iv;
+        return *this;
+    }
+    JOptional& operator=([[maybe_unused]] const std::nullopt_t& iv) {
+        m_pValue.reset();
+        return *this;
+    }
+
+    // Json workaround
+    JOptional& operator=(const nlohmann::json& iJson) {
         if (iJson.is_null()) {
-            return std::optional<ValueT>::operator=(std::nullopt);
+            m_pValue.reset();
+        } else {
+            *this = ValueT(iJson);
         }
-        return std::optional<ValueT>::operator=(iJson);
+        return *this;
     }
-
-    ValueT& operator+(const ValueT& val) {
-        if (!has_value()) {
-            return ValueT{} + val;
-        }
-        return value() + val;
-    }
-
-    ValueT& operator+=(const ValueT& val) {
-        if (!has_value()) {
-            return ValueT{} += val;
-        }
-        return value() += val;
-    }
-
-    bool operator==(const ValueT& val) const {
-        if (!has_value() || !has_value()) {
-            return false;
-        }
-        return value() == val;
-    }
-    bool operator==(const JOptional<ValueT>& optVal) const {
-        if (!has_value() || !optVal.has_value()) {
-            return false;
-        }
-        return value() == optVal.value();
-    }
-
-    template <typename vT = ValueT, typename = std::void_t<is_compareAvailable<ValueT> > >
-    bool operator<(const JOptional<ValueT>& _ohdl) const {
-        if (!has_value() || !_ohdl.has_value()) {
-            return false;
-        }
-        return value() < _ohdl.value();
-    }
-
     operator nlohmann::json() const {
-        if (std::optional<ValueT>::has_value()) {
-            return std::optional<ValueT>::value();
+        if (has_value()) {
+            return *m_pValue;
         }
         return {};
     }
 
     operator ValueT() const {
-        if (std::optional<ValueT>::has_value()) {
-            return std::optional<ValueT>::value();
+        if (has_value()) {
+            return *m_pValue;
         }
-        return {};
+        return ValueT{};
+    }
+
+    bool operator==(const JOptional& _ov) const {
+        if (!has_value() || !_ov.has_value())
+            return false;
+        return value() == _ov.value();
+    }
+    bool operator==(const ValueT& _oov) const {
+        if (!has_value())
+            return false;
+        return value() == _oov;
+    }
+    bool operator<(const JOptional& _ov) const {
+        if (!has_value()) {
+            return _ov.has_value();
+        }
+        return value() < _ov.value();
+    }
+    bool operator<(const ValueT& _oov) const {
+        if (!has_value()) {
+            return true;
+        }
+        return value() < _oov;
     }
 
     // Debug
