@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <Components/ExtraClasses/TreeObject.h>
+#include <Components/ExtraClasses/Containers/TreeObject.h>
 
 TEST(TreeObject, RegularOperations) {
     ExtraClasses::TreeObject<std::string> obj;

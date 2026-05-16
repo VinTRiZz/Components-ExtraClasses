@@ -6,4 +6,6 @@ else()
     COMPONENTS_CONFIGURE_COMPONENT(ExtraClasses)
 endif()
 
+COMPONENTS_LINK_COMPONENT(ExtraClasses Logger)
+
 COMPONENTS_ADD_COMPONENT_TEST(ExtraClasses)
