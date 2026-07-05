@@ -6,13 +6,48 @@ namespace ExtraClasses
 {
 
 template <typename DataT>
-TreeNode<DataT>::TreeNode(const TreeNodePtr<DataT>& pParent) :
+TreeNode<DataT>::TreeNode(const DataT& iData) :
+    m_data {iData} {
+    setupAsList();
+}
+
+template <typename DataT>
+TreeNode<DataT>::TreeNode(const ptr_type& pParent) :
     m_parent {pParent} {
     setupAsList();
 }
 
 template <typename DataT>
+TreeNode<DataT>::~TreeNode()
+{
+    setParent(nullptr);
+}
+
+template<typename DataT>
+template<typename... Args>
+typename TreeNode<DataT>::ptr_type TreeNode<DataT>::create(Args &&... args) {
+    return std::make_shared<item_type>(std::forward<Args>(args)...);
+}
+
+
+
+template <typename DataT>
 bool TreeNode<DataT>::callRecursive(const recursiveCallback_t& func) {
+    if (func(this->shared_from_this())) {
+        return true;
+    }
+    return std::visit([&func](auto& cont){
+        for (auto& pChild : cont) {
+            if (pChild->callRecursive(func)) {
+                return true;
+            }
+        }
+        return false;
+    }, m_children);
+}
+
+template <typename DataT>
+bool TreeNode<DataT>::callRecursive(const recursiveConstCallback_t& func) const {
     if (func(this->shared_from_this())) {
         return true;
     }
@@ -42,21 +77,6 @@ bool TreeNode<DataT>::callBackwardRecursive(const recursiveCallback_t& func) {
 }
 
 template <typename DataT>
-bool TreeNode<DataT>::callRecursive(const recursiveConstCallback_t& func) const {
-    if (func(this->shared_from_this())) {
-        return true;
-    }
-    return std::visit([&func](auto& cont){
-        for (auto& pChild : cont) {
-            if (pChild->callRecursive(func)) {
-                return true;
-            }
-        }
-        return false;
-    }, m_children);
-}
-
-template <typename DataT>
 bool TreeNode<DataT>::callBackwardRecursive(const recursiveConstCallback_t& func) const {
     if (func(this->shared_from_this())) {
         return true;
@@ -71,22 +91,29 @@ bool TreeNode<DataT>::callBackwardRecursive(const recursiveConstCallback_t& func
     }, m_children);
 }
 
+
+
 template <typename DataT>
-void TreeNode<DataT>::setParent(const TreeNodePtr<DataT>& pParent) {
+void TreeNode<DataT>::setParent(const ptr_type& pParent) {
     auto pSelfParent = m_parent.lock();
+    if (pSelfParent == pParent) {
+        return;
+    }
     if (pSelfParent) {
         pSelfParent->removeNode(this->shared_from_this());
     }
     m_parent = pParent;
-    pParent->addNode(this->shared_from_this());
+    if (pParent) {
+        pParent->addNode(this->shared_from_this());
+    }
 }
 
 template <typename DataT>
-std::size_t TreeNode<DataT>::getNodeCount() const {
-    return std::visit([](auto& cont){
-        return cont.size();
-    }, m_children);
+typename TreeNode<DataT>::ptr_type TreeNode<DataT>::getParent() const {
+    return m_parent.lock();
 }
+
+
 
 template <typename DataT>
 bool TreeNode<DataT>::addNode(std::size_t beforeIndex) {
@@ -103,8 +130,8 @@ bool TreeNode<DataT>::addNode(std::size_t beforeIndex) {
 }
 
 template <typename DataT>
-void TreeNode<DataT>::addNode(const TreeNodePtr<DataT>& pNode) {
-    std::visit([pNode](auto& cont){
+void TreeNode<DataT>::addNode(const ptr_type& pNode) {
+    std::visit([this, pNode](auto& cont){
         cont.push_back(pNode);
     }, m_children);
 }
@@ -117,7 +144,7 @@ void TreeNode<DataT>::addNode(const DataT& nodeData) {
 }
 
 template <typename DataT>
-bool TreeNode<DataT>::removeNode(TreeNodePtr<DataT> pNode) {
+bool TreeNode<DataT>::removeNode(ptr_type pNode) {
     return std::visit([pNode, this](auto& cont){
         auto targetPos = std::find(cont.begin(), cont.end(), pNode);
         if (targetPos != cont.end()) {
@@ -154,8 +181,8 @@ void TreeNode<DataT>::clearNodes() {
 }
 
 template <typename DataT>
-TreeNodePtr<DataT> TreeNode<DataT>::getNode(std::size_t index) const {
-    return std::visit([index, this](auto& cont) -> TreeNodePtr<DataT> {
+typename TreeNode<DataT>::ptr_type TreeNode<DataT>::getNode(std::size_t index) const {
+    return std::visit([index, this](auto& cont) -> ptr_type {
         if (index < cont.size()) {
             auto targetPos = cont.begin();
             std::advance(targetPos, index);
@@ -166,9 +193,9 @@ TreeNodePtr<DataT> TreeNode<DataT>::getNode(std::size_t index) const {
 }
 
 template<typename DataT>
-TreeNodePtr<DataT> TreeNode<DataT>::findNode(const DataT& value) const
+typename TreeNode<DataT>::ptr_type TreeNode<DataT>::findNode(const DataT& value) const
 {
-    return std::visit([&value, this](auto& cont) -> TreeNodePtr<DataT> {
+    return std::visit([&value, this](auto& cont) -> ptr_type {
         auto targetPos = std::find_if(cont.begin(), cont.end(), [&value](auto& pNode){
             return (pNode->getData() == value);
         });
@@ -205,6 +232,45 @@ std::size_t TreeNode<DataT>::getTotalChildCount() const
     return count;
 }
 
+template <typename DataT>
+std::size_t TreeNode<DataT>::getNodeCount() const {
+    return std::visit([](auto& cont){
+        return cont.size();
+    }, m_children);
+}
+
+template <typename DataT>
+std::size_t TreeNode<DataT>::getNodeRow(const ptr_type& pTargetNode) const {
+    return std::visit([pTargetNode, this](auto& cont) -> std::size_t {
+        std::size_t stepCount {};
+        auto targetPos = std::find_if(cont.begin(), cont.end(), [pTargetNode, &stepCount](auto& pNode){
+            if (pTargetNode == pNode) {
+                return true;
+            }
+            ++stepCount;
+            return false;
+        });
+        if (targetPos != cont.end()) {
+            return stepCount;
+        }
+        return {};
+    }, m_children);
+}
+
+template<typename DataT>
+template<typename FuncT>
+inline void TreeNode<DataT>::sortNodes(FuncT &&func)
+{
+    return std::visit([&](auto& cont) {
+        using cont_t = std::decay_t<decltype(cont)>;
+        if constexpr (std::is_same_v<cont_t, std::vector<ptr_type> >) {
+            std::sort(cont.data(), cont.data() + cont.size(), func);
+        } else {
+            cont.sort(func);
+        }
+    }, m_children);
+}
+
 
 template <typename DataT>
 void TreeNode<DataT>::setData(const DataT& iData) {
@@ -212,16 +278,26 @@ void TreeNode<DataT>::setData(const DataT& iData) {
 }
 
 template <typename DataT>
-DataT TreeNode<DataT>::getData() const {
+void TreeNode<DataT>::setData(DataT&& iData) {
+    m_data = std::forward<DataT>(iData);
+}
+
+template <typename DataT>
+const DataT& TreeNode<DataT>::getData() const {
+    return m_data;
+}
+
+template <typename DataT>
+DataT& TreeNode<DataT>::getData() {
     return m_data;
 }
 
 template<typename DataT>
 void TreeNode<DataT>::setupAsList()
 {
-    if (std::holds_alternative< std::vector<TreeNodePtr<DataT> > >(m_children)) {
-        auto childrenV = std::get< std::vector<TreeNodePtr<DataT> > >(m_children);
-        std::list<TreeNodePtr<DataT> > children;
+    if (std::holds_alternative< std::vector<ptr_type > >(m_children)) {
+        auto childrenV = std::get< std::vector<ptr_type > >(m_children);
+        std::list<ptr_type > children;
         std::copy(childrenV.begin(), childrenV.end(), std::back_inserter(children));
         m_children = std::move(children);
     }
@@ -230,24 +306,13 @@ void TreeNode<DataT>::setupAsList()
 template<typename DataT>
 void TreeNode<DataT>::setupAsVector()
 {
-    if (std::holds_alternative< std::list<TreeNodePtr<DataT> > >(m_children)) {
-        auto childrenL = std::get< std::list<TreeNodePtr<DataT> > >(m_children);
-        std::vector<TreeNodePtr<DataT> > children;
+    if (std::holds_alternative< std::list<ptr_type > >(m_children)) {
+        auto childrenL = std::get< std::list<ptr_type > >(m_children);
+        std::vector<ptr_type > children;
         children.reserve(childrenL.size());
         std::copy(childrenL.begin(), childrenL.end(), std::back_inserter(children));
         m_children = std::move(children);
     }
-}
-
-
-template <typename DataT>
-TreeObject<DataT>::TreeObject() {
-    m_rootNode = std::make_shared<TreeNode<DataT> >();
-}
-
-template <typename DataT>
-TreeNodePtr<DataT> TreeObject<DataT>::getRootNode() const {
-    return m_rootNode;
 }
 
 }

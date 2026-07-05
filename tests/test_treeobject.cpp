@@ -1,14 +1,13 @@
+#include "containers/treeobject.hpp"
 #include <gtest/gtest.h>
 
 #include <Components/ExtraClasses/Containers/TreeObject.h>
 
-TEST(TreeObject, RegularOperations) {
-    ExtraClasses::TreeObject<std::string> obj;
+using Node_t = ExtraClasses::TreeNode<std::string>;
+using NodePtr_t = ExtraClasses::TreeNodePtr<std::string>;
 
-    // Check root creating and getting
-    auto pRoot = obj.getRootNode();
-    ASSERT_TRUE(pRoot != nullptr);
-    ASSERT_EQ(pRoot, obj.getRootNode());
+TEST(TreeNodePtr, RegularOperations) {
+    NodePtr_t pRoot = Node_t::create("");
 
     // Check data setting
     pRoot->setData("Test data");
@@ -41,9 +40,8 @@ TEST(TreeObject, RegularOperations) {
 
 
 // ============================ BASIC OPERATIONS //
-TEST(TreeObject, AddingNodes) {
-    ExtraClasses::TreeObject<std::string> obj;
-    auto pRoot = obj.getRootNode();
+TEST(TreeNodePtr, AddingNodes) {
+    NodePtr_t pRoot = Node_t::create("");
 
     // Add by value
     pRoot->addNode("1");
@@ -61,13 +59,13 @@ TEST(TreeObject, AddingNodes) {
 
     // Add as object
     pRoot->clearNodes();
-    auto pNode = std::make_shared<ExtraClasses::TreeNode<std::string> >();
+    auto pNode = Node_t::create("");
     pNode->setData("1");
     pRoot->addNode(pNode);
-    pNode = std::make_shared<ExtraClasses::TreeNode<std::string> >();
+    pNode = Node_t::create("");
     pNode->setData("2");
     pRoot->addNode(pNode);
-    pNode = std::make_shared<ExtraClasses::TreeNode<std::string> >();
+    pNode = Node_t::create("");
     pNode->setData("3");
     pRoot->addNode(pNode);
     ASSERT_EQ("1", pRoot->getNode(0)->getData());
@@ -75,9 +73,8 @@ TEST(TreeObject, AddingNodes) {
     ASSERT_EQ("3", pRoot->getNode(2)->getData());
 }
 
-TEST(TreeObject, RemovingNodes) {
-    ExtraClasses::TreeObject<std::string> obj;
-    auto pRoot = obj.getRootNode();
+TEST(TreeNodePtr, RemovingNodes) {
+    NodePtr_t pRoot = Node_t::create("");
 
     // Remove by value
     pRoot->addNode("1");
@@ -107,9 +104,8 @@ TEST(TreeObject, RemovingNodes) {
 
 
 // ============================ RECURSION //
-TEST(TreeObject, BranchMoving) {
-    ExtraClasses::TreeObject<int> obj;
-    auto pRoot = obj.getRootNode();
+TEST(TreeNodePtr, BranchMoving) {
+    ExtraClasses::TreeNodePtr<int> pRoot = ExtraClasses::TreeNode<int>::create(0);
     pRoot->setData(1);
 
     // Setup tree base
@@ -139,9 +135,8 @@ TEST(TreeObject, BranchMoving) {
 }
 
 
-TEST(TreeObject, RecursiveSameLayer) {
-    ExtraClasses::TreeObject<std::string> obj;
-    auto pRoot = obj.getRootNode();
+TEST(TreeNodePtr, RecursiveSameLayer) {
+    NodePtr_t pRoot = Node_t::create("");
 
     pRoot->setData("Test data");
     ASSERT_EQ("Test data", pRoot->getData());
@@ -180,9 +175,8 @@ TEST(TreeObject, RecursiveSameLayer) {
 }
 
 
-TEST(TreeObject, RecursiveDown) {
-    ExtraClasses::TreeObject<int> obj;
-    auto pRoot = obj.getRootNode();
+TEST(TreeNodePtr, RecursiveDown) {
+    ExtraClasses::TreeNodePtr<int> pRoot = ExtraClasses::TreeNode<int>::create(0);
     pRoot->setData(1);
 
     // Setup tree
@@ -208,9 +202,8 @@ TEST(TreeObject, RecursiveDown) {
 }
 
 
-TEST(TreeObject, RecursiveUp) {
-    ExtraClasses::TreeObject<int> obj;
-    auto pRoot = obj.getRootNode();
+TEST(TreeNodePtr, RecursiveUp) {
+    ExtraClasses::TreeNodePtr<int> pRoot = ExtraClasses::TreeNode<int>::create(0);
     pRoot->setData(1);
 
     int curNodeNo {1};
