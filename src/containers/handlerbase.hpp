@@ -8,7 +8,7 @@ namespace ExtraClasses {
 /**
  * @brief The HandlerBase class Base for pointer handlers
  */
-template <typename PointerT>
+template <typename ValueT>
 class HandlerBase
 {
     // Extra metaclasses
@@ -19,63 +19,77 @@ class HandlerBase
     struct is_compareAvailable<T, std::void_t<decltype(std::declval<T>().operator<(T{}))>> : std::true_type {};
 
 public:
+    using value_t = ValueT;
+
     HandlerBase() = default;
-    explicit HandlerBase(PointerT* pTarget);
+    HandlerBase(HandlerBase&&) = default;
+    HandlerBase(const HandlerBase&) = default;
+    explicit HandlerBase(value_t* pTarget);
+    explicit HandlerBase(value_t& pTarget);
     ~HandlerBase() = default;
 
     // Analog of std::static_pointer_cast
     template <typename DerivedT>
-    std::enable_if_t<std::is_base_of_v<PointerT, DerivedT> || std::is_base_of_v<DerivedT, PointerT>,
+    std::enable_if_t<std::is_base_of_v<value_t, DerivedT> || std::is_base_of_v<DerivedT, value_t>,
                      DerivedT*>
     cast();
     template <typename DerivedT>
-    std::enable_if_t<std::is_base_of_v<PointerT, DerivedT> || std::is_base_of_v<DerivedT, PointerT>,
+    std::enable_if_t<std::is_base_of_v<value_t, DerivedT> || std::is_base_of_v<DerivedT, value_t>,
                      const DerivedT*>
     cast() const;
 
     // Analog of std::dynamic_pointer_cast
     template <typename DerivedT>
-    std::enable_if_t<std::is_base_of_v<PointerT, DerivedT> || std::is_base_of_v<DerivedT, PointerT>,
+    std::enable_if_t<std::is_base_of_v<value_t, DerivedT> || std::is_base_of_v<DerivedT, value_t>,
                      DerivedT*>
     cast_dynamic();
     template <typename DerivedT>
-    std::enable_if_t<std::is_base_of_v<PointerT, DerivedT> || std::is_base_of_v<DerivedT, PointerT>,
+    std::enable_if_t<std::is_base_of_v<value_t, DerivedT> || std::is_base_of_v<DerivedT, value_t>,
                      const DerivedT*>
     cast_dynamic() const;
 
     // Pointer access operators
-    PointerT* operator->() noexcept(false);
-    const PointerT* operator->() const;
+    value_t* operator->() noexcept(false);
+    value_t& operator*() noexcept(false);
+    const value_t* operator->() const noexcept(false);
+    const value_t& operator*() const noexcept(false);
 
     // Copy of STL smart pointers logic
-    PointerT* get();
-    const PointerT* get() const;
+    value_t* get();
+    const value_t* get() const;
     operator bool() const;
 
     bool isValid() const noexcept;
 
     // For std::set and others using
-    bool operator<(const HandlerBase& _ohdl) const;
+    bool operator <(const HandlerBase& _ohdl) const;
+
+    // Assigment
+    HandlerBase& operator =(const HandlerBase& _ohdl) = default;
+    HandlerBase& operator =(HandlerBase&& _ohdl) = default;
+    HandlerBase& operator =(value_t* _ohdl);
 
 private:
     std::shared_ptr<bool> m_isValid { std::make_shared<bool>(false) };
-    PointerT* m_pTarget {nullptr}; // Pointer for synchronization
+    value_t* m_pTarget {nullptr}; // Pointer for synchronization
 
 protected:
     // Add space for reimplement
-    virtual void setPointer(PointerT* pTarget);
+    virtual void setPointer(value_t* pTarget);
     void invalidate();
 };
 
 // =============================== IMPLEMENTATION ===================================== //
 
-template<typename PointerT>
-inline HandlerBase<PointerT>::HandlerBase(PointerT *pTarget) { setPointer(pTarget); }
+template<typename ValueT>
+inline HandlerBase<ValueT>::HandlerBase(ValueT *pTarget) { setPointer(pTarget); }
+template<typename ValueT>
+inline HandlerBase<ValueT>::HandlerBase(ValueT &pTarget) { setPointer(&pTarget); }
 
-template <typename PointerT>
+template <typename ValueT>
 template <typename DerivedT>
-std::enable_if_t<std::is_base_of_v<PointerT, DerivedT> || std::is_base_of_v<DerivedT, PointerT>, DerivedT*>
-HandlerBase<PointerT>::cast()
+std::enable_if_t<std::is_base_of_v<ValueT, DerivedT> || std::is_base_of_v<DerivedT, ValueT>, DerivedT*>
+HandlerBase<ValueT>::cast()
 {
     if (!isValid()) {
         throw std::runtime_error("Invalid pointer");
@@ -83,10 +97,10 @@ HandlerBase<PointerT>::cast()
     return static_cast<DerivedT*>(m_pTarget);
 }
 
-template <typename PointerT>
+template <typename ValueT>
 template <typename DerivedT>
-std::enable_if_t<std::is_base_of_v<PointerT, DerivedT> || std::is_base_of_v<DerivedT, PointerT>, const DerivedT*>
-HandlerBase<PointerT>::cast() const
+std::enable_if_t<std::is_base_of_v<ValueT, DerivedT> || std::is_base_of_v<DerivedT, ValueT>, const DerivedT*>
+HandlerBase<ValueT>::cast() const
 {
     if (!isValid()) {
         throw std::runtime_error("Invalid pointer");
@@ -94,10 +108,10 @@ HandlerBase<PointerT>::cast() const
     return static_cast<const DerivedT*>(m_pTarget);
 }
 
-template <typename PointerT>
+template <typename ValueT>
 template <typename DerivedT>
-std::enable_if_t<std::is_base_of_v<PointerT, DerivedT> || std::is_base_of_v<DerivedT, PointerT>, DerivedT*>
-HandlerBase<PointerT>::cast_dynamic()
+std::enable_if_t<std::is_base_of_v<ValueT, DerivedT> || std::is_base_of_v<DerivedT, ValueT>, DerivedT*>
+HandlerBase<ValueT>::cast_dynamic()
 {
     if (!isValid()) {
         throw std::runtime_error("Invalid pointer");
@@ -105,10 +119,10 @@ HandlerBase<PointerT>::cast_dynamic()
     return dynamic_cast<DerivedT*>(m_pTarget);
 }
 
-template <typename PointerT>
+template <typename ValueT>
 template <typename DerivedT>
-std::enable_if_t<std::is_base_of_v<PointerT, DerivedT> || std::is_base_of_v<DerivedT, PointerT>, const DerivedT*>
-HandlerBase<PointerT>::cast_dynamic() const
+std::enable_if_t<std::is_base_of_v<ValueT, DerivedT> || std::is_base_of_v<DerivedT, ValueT>, const DerivedT*>
+HandlerBase<ValueT>::cast_dynamic() const
 {
     if (!isValid()) {
         throw std::runtime_error("Invalid pointer");
@@ -116,56 +130,80 @@ HandlerBase<PointerT>::cast_dynamic() const
     return dynamic_cast<const DerivedT*>(m_pTarget);
 }
 
-template<typename PointerT>
-inline PointerT *HandlerBase<PointerT>::operator->() noexcept(false) {
+template<typename ValueT>
+inline ValueT *HandlerBase<ValueT>::operator->() noexcept(false) {
     if (!isValid()) {
         throw std::runtime_error("Invalid pointer");
     }
     return m_pTarget;
 }
 
-template<typename PointerT>
-inline const PointerT *HandlerBase<PointerT>::operator->() const noexcept(false) {
+template<typename ValueT>
+inline ValueT &HandlerBase<ValueT>::operator*() noexcept(false) {
+    if (!isValid()) {
+        throw std::runtime_error("Invalid pointer");
+    }
+    return *m_pTarget;
+}
+
+template<typename ValueT>
+inline const ValueT &HandlerBase<ValueT>::operator*() const noexcept(false) {
+    if (!isValid()) {
+        throw std::runtime_error("Invalid pointer");
+    }
+    return *m_pTarget;
+}
+
+template<typename ValueT>
+inline const ValueT *HandlerBase<ValueT>::operator->() const noexcept(false) {
     if (!isValid()) {
         throw std::runtime_error("Invalid pointer");
     }
     return m_pTarget;
 }
 
-template<typename PointerT>
-inline PointerT *HandlerBase<PointerT>::get() { return m_pTarget; }
+template<typename ValueT>
+inline ValueT *HandlerBase<ValueT>::get() { return m_pTarget; }
 
-template<typename PointerT>
-inline const PointerT *HandlerBase<PointerT>::get() const { return m_pTarget; }
+template<typename ValueT>
+inline const ValueT *HandlerBase<ValueT>::get() const { return m_pTarget; }
 
-template<typename PointerT>
-inline HandlerBase<PointerT>::operator bool() const { return isValid(); }
+template<typename ValueT>
+inline HandlerBase<ValueT>::operator bool() const { return isValid(); }
 
-template<typename PointerT>
-inline bool HandlerBase<PointerT>::isValid() const noexcept { return *m_isValid; }
+template<typename ValueT>
+inline bool HandlerBase<ValueT>::isValid() const noexcept { return *m_isValid; }
 
-template<typename PointerT>
-inline bool HandlerBase<PointerT>::operator<(const HandlerBase &_ohdl) const {
+template <typename ValueT>
+inline HandlerBase<ValueT>& HandlerBase<ValueT>::operator =(value_t* _ovalue)
+{
+    m_pTarget = _ovalue;
+    *m_isValid = true;
+    return *this;
+}
+
+template<typename ValueT>
+inline bool HandlerBase<ValueT>::operator<(const HandlerBase &_ohdl) const {
     if (!isValid()) {
         return _ohdl.isValid();
     }
-    if constexpr (is_compareAvailable<PointerT>::value) {
+    if constexpr (is_compareAvailable<ValueT>::value) {
         return *m_pTarget < *_ohdl.m_pTarget;
     } else {
         return m_pTarget < _ohdl.m_pTarget;
     }
 }
 
-template<typename PointerT>
-inline void HandlerBase<PointerT>::setPointer(PointerT *pTarget) {
+template<typename ValueT>
+inline void HandlerBase<ValueT>::setPointer(ValueT *pTarget) {
     // TODO: Set pointer is not thread-safe... Think about it
     *m_isValid = false;
     m_pTarget = pTarget;
     *m_isValid = (m_pTarget != nullptr);
 }
 
-template<typename PointerT>
-inline void HandlerBase<PointerT>::invalidate()
+template<typename ValueT>
+inline void HandlerBase<ValueT>::invalidate()
 {
     *m_isValid = false;
 }
