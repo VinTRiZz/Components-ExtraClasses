@@ -84,9 +84,6 @@ void TreeNode<DataT>::setParent(const ptr_type& pParent) {
     if (pSelfParent == pParent) {
         return;
     }
-    if (pSelfParent) {
-        pSelfParent->removeNode(this->shared_from_this());
-    }
     m_parent = pParent;
     if (pParent) {
         pParent->addNode(this->shared_from_this());
