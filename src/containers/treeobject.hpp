@@ -34,15 +34,15 @@ public:
     template <typename...Args>
     static ptr_type create(Args&&... args);
 
-    // Function return true if must stop calling after processing node
-    using recursiveCallback_t = std::function<bool(const ptr_type&)>;
-    using recursiveConstCallback_t = std::function<bool(const TreeNodeConstPtr<DataT>&)>;
-    
     // Call operation recursively, including this object
-    bool callRecursive(const recursiveCallback_t& func);
-    bool callRecursive(const recursiveConstCallback_t& func) const;
-    bool callBackwardRecursive(const recursiveCallback_t& func);
-    bool callBackwardRecursive(const recursiveConstCallback_t& func) const;
+    template <typename FuncT, typename... Args>
+    bool callRecursive(FuncT&& func, Args&&... args);
+    template <typename FuncT, typename... Args>
+    bool callRecursive(FuncT&& func, Args&&... args) const;
+    template <typename FuncT, typename... Args>
+    bool callBackwardRecursive(FuncT&& func, Args&&... args);
+    template <typename FuncT, typename... Args>
+    bool callBackwardRecursive(FuncT&& func, Args&&... args) const;
 
     // Working with parent node
     void setParent(const ptr_type& pParent);

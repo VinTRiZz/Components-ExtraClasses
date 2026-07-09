@@ -127,7 +127,7 @@ TEST(TreeNodePtr, BranchMoving) {
 
     // Check count of items
     int counter {0};
-    pRoot->callRecursive([&counter](auto& pNode) -> bool {
+    pRoot->callRecursive([&counter](const auto& pNode) -> bool {
         ++counter;
         return false;
     });
@@ -148,7 +148,7 @@ TEST(TreeNodePtr, RecursiveSameLayer) {
     // Search in 0 depth
     std::string foundData;
     int callCount {0};
-    pRoot->callRecursive([&foundData, &callCount](auto& pNode) -> bool {
+    pRoot->callRecursive([&foundData, &callCount](const auto& pNode) -> bool {
         ++callCount;
         if (pNode->getData() == "2") {
             foundData = "2";
@@ -162,7 +162,7 @@ TEST(TreeNodePtr, RecursiveSameLayer) {
     // Search for root node from root node
     foundData.clear();
     callCount = 0;
-    pRoot->callRecursive([&foundData, &callCount](auto& pNode) -> bool {
+    pRoot->callRecursive([&foundData, &callCount](const auto& pNode) -> bool {
         ++callCount;
         if (pNode->getData() == "Test data") {
             foundData = "Test data";
@@ -190,7 +190,7 @@ TEST(TreeNodePtr, RecursiveDown) {
 
     // Get total item count
     int counter {0};
-    pRoot->callRecursive([&counter](auto& pNode) -> bool {
+    pRoot->callRecursive([&counter](const auto& pNode) -> bool {
         ++counter;
         return false;
     });
@@ -216,7 +216,7 @@ TEST(TreeNodePtr, RecursiveUp) {
     pDepthNode = pDepthNode->getNode(0);
 
     int depth {0};
-    pDepthNode->callBackwardRecursive([&depth](auto& pNode) -> bool {
+    pDepthNode->callBackwardRecursive([&depth](const auto& pNode) -> bool {
         ++depth;
         return false;
     });

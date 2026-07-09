@@ -29,10 +29,9 @@ typename TreeNode<DataT>::ptr_type TreeNode<DataT>::create(Args &&... args) {
     return std::make_shared<item_type>(std::forward<Args>(args)...);
 }
 
-
-
 template <typename DataT>
-bool TreeNode<DataT>::callRecursive(const recursiveCallback_t& func) {
+template <typename FuncT, typename... Args>
+bool TreeNode<DataT>::callRecursive(FuncT&& func, Args&&... args) {
     if (func(this->shared_from_this())) {
         return true;
     }
@@ -47,7 +46,8 @@ bool TreeNode<DataT>::callRecursive(const recursiveCallback_t& func) {
 }
 
 template <typename DataT>
-bool TreeNode<DataT>::callRecursive(const recursiveConstCallback_t& func) const {
+template <typename FuncT, typename... Args>
+bool TreeNode<DataT>::callRecursive(FuncT&& func, Args&&... args) const {
     if (func(this->shared_from_this())) {
         return true;
     }
@@ -62,35 +62,20 @@ bool TreeNode<DataT>::callRecursive(const recursiveConstCallback_t& func) const 
 }
 
 template <typename DataT>
-bool TreeNode<DataT>::callBackwardRecursive(const recursiveCallback_t& func) {
-    if (func(this->shared_from_this())) {
-        return true;
-    }
-    return std::visit([&func, this](auto& cont){
-        auto pParent = m_parent.lock();
-        if (pParent.use_count()) {
-            return pParent->callBackwardRecursive(func);
-        }
-
-        return false;
-    }, m_children);
+template <typename FuncT, typename... Args>
+bool TreeNode<DataT>::callBackwardRecursive(FuncT&& func, Args&&... args) {
+    auto pParent = getParent();
+    if (pParent) { return func(pParent, std::forward<Args>(args)...); }
+    return func(this->shared_from_this());
 }
 
 template <typename DataT>
-bool TreeNode<DataT>::callBackwardRecursive(const recursiveConstCallback_t& func) const {
-    if (func(this->shared_from_this())) {
-        return true;
-    }
-    return std::visit([&func, this](auto& cont){
-        auto pParent = m_parent.lock();
-        if (pParent.use_count()) {
-            return pParent->callBackwardRecursive(func);
-        }
-
-        return false;
-    }, m_children);
+template <typename FuncT, typename... Args>
+bool TreeNode<DataT>::callBackwardRecursive(FuncT&& func, Args&&... args) const {
+    auto pParent = getParent();
+    if (pParent) { return func(pParent, std::forward<Args>(args)...); }
+    return func(this->shared_from_this());
 }
-
 
 
 template <typename DataT>
@@ -212,7 +197,7 @@ std::size_t TreeNode<DataT>::getDepth() const
     std::size_t depth {0};
     auto pParent = m_parent.lock();
     if (pParent) {
-        pParent->callBackwardRecursive([&depth](auto& pNode) -> bool {
+        pParent->callBackwardRecursive([&depth](const auto& pNode) -> bool {
             ++depth;
             return false;
         });
@@ -224,7 +209,7 @@ template<typename DataT>
 std::size_t TreeNode<DataT>::getTotalChildCount() const
 {
     std::size_t count {0};
-    callRecursive([&count](auto& pNode) -> bool {
+    callRecursive([&count](const auto& pNode) -> bool {
         ++count;
         return false;
     });
@@ -243,7 +228,7 @@ template <typename DataT>
 std::size_t TreeNode<DataT>::getNodeRow(const ptr_type& pTargetNode) const {
     return std::visit([pTargetNode, this](auto& cont) -> std::size_t {
         std::size_t stepCount {};
-        auto targetPos = std::find_if(cont.begin(), cont.end(), [pTargetNode, &stepCount](auto& pNode){
+        auto targetPos = std::find_if(cont.begin(), cont.end(), [pTargetNode, &stepCount](const auto& pNode){
             if (pTargetNode == pNode) {
                 return true;
             }
