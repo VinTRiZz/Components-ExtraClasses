@@ -5,20 +5,23 @@
 namespace ExtraClasses
 {
 
-// TODO: Rewrite class with codes
-enum class ErrorCode
-{
-    NoError = 0,
-};
+const int ErrorCode_OK {0};
+const int ErrorCode_UNKNOWN_ERROR {1};
 
 /**
  * @brief The ErrorObject class Class for error describing
  */
-class Error : public std::exception
+class ErrorBase : public std::exception
 {
 public:
-    Error() = default;
-    Error(ErrorCode errCode, const std::string& detailText = {});
+    ErrorBase() = default;
+    ErrorBase(ErrorBase&&) = default;
+    ErrorBase& operator =(ErrorBase&&) = default;
+
+    ErrorBase(const ErrorBase&) = default;
+    ErrorBase& operator =(const ErrorBase&) = default;
+
+    ErrorBase(int errCode, const std::string& detailText = {});
 
     // exception interface
     const char *what() const noexcept override;
@@ -29,43 +32,46 @@ public:
     // USED IN CONDITIONS WITH LOGGER "ALIVE"
     void printSelf();
     static void printSelf(
-        ErrorCode errCode,
+        int errCode,
         const std::string& detailText = {});
 
     // Reset restores to NoError state (sugar)
     void reset();
-    void setCode(ErrorCode errCode);
-    ErrorCode getCode() const;
+    void setCode(int errCode);
+    int getCode() const;
 
     bool isOk() const;
     operator bool() const;
 
     std::string getErrorText() const;
-    virtual std::string errorCodeToText(ErrorCode errc) const;
+    virtual std::string errorCodeToText(int errc) const;
 
     void setDetailText(const std::string& errText);
-    std::string getErrorDetailText() const;
+    std::string getDetailText() const;
 
 private:
-    ErrorCode           m_errorCode {ErrorCode::NoError};
+    int                 m_errorCode {ErrorCode_OK};
     std::string         m_detailText;
     mutable std::string m_dumpText; // std::exception inherit workaround (see method what() )
 };
 
-
 /**
  * @brief The ErrorUser class Subclass for error handling
  */
-class ErrorUser
+template <typename ErrorClassT>
+class ErrorUserBase
 {
 public:
-    bool isValid() const;
+    bool isValid() const {
+        return m_error.isOk();
+    }
 
-    Error getError() const;
+    ErrorClassT getError() const {
+        return m_error;
+    }
 
 protected:
-    mutable Error m_error;
+    mutable ErrorClassT m_error;
 };
-
 
 }
