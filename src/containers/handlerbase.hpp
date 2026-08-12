@@ -59,7 +59,9 @@ public:
     const value_t* get() const;
     operator bool() const;
 
+    // Handler source management
     bool isValid() const noexcept;
+    void invalidate();
 
     // For std::set and others using
     bool operator <(const HandlerBase& _ohdl) const;
@@ -76,7 +78,6 @@ private:
 protected:
     // Add space for reimplement
     virtual void setPointer(value_t* pTarget);
-    void invalidate();
 };
 
 // =============================== IMPLEMENTATION ===================================== //
