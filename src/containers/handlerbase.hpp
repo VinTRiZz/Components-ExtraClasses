@@ -63,7 +63,7 @@ public:
     bool isValid() const noexcept;
     void invalidate();
 
-    // For std::set and others using
+    // For std::set and others using. Default is pointer address sort
     bool operator <(const HandlerBase& _ohdl) const;
 
     // Assigment
@@ -164,10 +164,20 @@ inline const ValueT *HandlerBase<ValueT>::operator->() const noexcept(false) {
 }
 
 template<typename ValueT>
-inline ValueT *HandlerBase<ValueT>::get() { return m_pTarget; }
+inline ValueT *HandlerBase<ValueT>::get() {
+    if (!isValid()) {
+        throw std::runtime_error("Invalid pointer");
+    }
+    return m_pTarget;
+}
 
 template<typename ValueT>
-inline const ValueT *HandlerBase<ValueT>::get() const { return m_pTarget; }
+inline const ValueT *HandlerBase<ValueT>::get() const {
+    if (!isValid()) {
+        throw std::runtime_error("Invalid pointer");
+    }
+    return m_pTarget;
+}
 
 template<typename ValueT>
 inline HandlerBase<ValueT>::operator bool() const { return isValid(); }
@@ -207,6 +217,7 @@ template<typename ValueT>
 inline void HandlerBase<ValueT>::invalidate()
 {
     *m_isValid = false;
+    m_pTarget = nullptr;
 }
 
 } // namespace Web
