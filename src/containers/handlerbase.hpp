@@ -188,8 +188,7 @@ inline bool HandlerBase<ValueT>::isValid() const noexcept { return *m_isValid; }
 template <typename ValueT>
 inline HandlerBase<ValueT>& HandlerBase<ValueT>::operator =(value_t* _ovalue)
 {
-    m_pTarget = _ovalue;
-    *m_isValid = true;
+    setPointer(_ovalue);
     return *this;
 }
 
@@ -216,8 +215,7 @@ inline void HandlerBase<ValueT>::setPointer(ValueT *pTarget) {
 template<typename ValueT>
 inline void HandlerBase<ValueT>::invalidate()
 {
-    *m_isValid = false;
-    m_pTarget = nullptr;
+    setPointer(nullptr);
 }
 
 } // namespace Web

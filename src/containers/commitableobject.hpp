@@ -41,6 +41,10 @@ public:
         return m_editedValue;
     }
 
+    operator ValueT() const {
+        return m_editedValue;
+    }
+
     // If available
     std::enable_if_t<std::is_copy_assignable_v<ValueT>, CommitableObject<ValueT>&>
     operator=(const ValueT& _ov) {
