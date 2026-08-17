@@ -57,7 +57,7 @@ public:
     // Copy of STL smart pointers logic
     value_t* get();
     const value_t* get() const;
-    operator bool() const;
+    explicit operator bool() const;
 
     // Handler source management
     bool isValid() const noexcept;
@@ -65,6 +65,10 @@ public:
 
     // For std::set and others using. Default is pointer address sort
     bool operator <(const HandlerBase& _ohdl) const;
+
+    // Comparing
+    bool operator ==(value_t* _oval) const;
+    bool operator ==(const HandlerBase& _ohdl) const;
 
     // Assigment
     HandlerBase& operator =(const HandlerBase& _ohdl) = default;
@@ -75,9 +79,7 @@ private:
     std::shared_ptr<bool> m_isValid { std::make_shared<bool>(false) };
     value_t* m_pTarget {nullptr}; // Pointer for synchronization
 
-protected:
-    // Add space for reimplement
-    virtual void setPointer(value_t* pTarget);
+    void setPointer(value_t* pTarget);
 };
 
 // =============================== IMPLEMENTATION ===================================== //
@@ -202,6 +204,16 @@ inline bool HandlerBase<ValueT>::operator<(const HandlerBase &_ohdl) const {
     } else {
         return m_pTarget < _ohdl.m_pTarget;
     }
+}
+
+template<typename ValueT>
+bool HandlerBase<ValueT>::operator ==(value_t* _oval) const {
+    return (isValid() && (m_pTarget == _oval));
+}
+
+template<typename ValueT>
+bool HandlerBase<ValueT>::operator ==(const HandlerBase& _ohdl) const {
+    return m_pTarget == _ohdl.m_pTarget;
 }
 
 template<typename ValueT>
