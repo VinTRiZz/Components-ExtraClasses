@@ -98,7 +98,7 @@ public:
             return isValid();
         }
         if constexpr (is_lessComparable<ValueT>::value) {
-            return (*m_pTarget < *_ohdl.m_pTarget);
+            return (*(*m_pTarget) < *(*_ohdl.m_pTarget));
         } else {
             return (m_pTarget < _ohdl.m_pTarget);
         }
