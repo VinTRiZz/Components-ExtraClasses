@@ -3,6 +3,8 @@
 #include <memory>
 #include <stdexcept>
 
+#include <Components/Logger/Logger.h>
+
 namespace ExtraClasses {
 
 /**
@@ -22,18 +24,14 @@ public:
     using value_t = ValueT;
 
     Handler() = default;
-    Handler(Handler&&) = default;
-    Handler(const Handler&) = default;
+    Handler(Handler&& _ohdl) = default;
+    Handler(const Handler& _ohdl) = default;
     explicit Handler(value_t* pTarget) :
-        m_pTarget { std::make_shared<value_t*>(nullptr) }
-    {
-        *m_pTarget = pTarget;
-    }
+        m_pTarget { std::make_shared<value_t*>(pTarget) }
+    { }
     explicit Handler(value_t& pTarget) :
-        m_pTarget { std::make_shared<value_t*>(nullptr) }
-    {
-        *m_pTarget = pTarget;
-    }
+        m_pTarget { std::make_shared<value_t*>(pTarget) }
+    { }
     ~Handler() = default;
 
     // Analog of std::static_pointer_cast
