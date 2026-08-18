@@ -2,13 +2,13 @@
 
 #include <memory>
 
-#include <Components/ExtraClasses/Containers/HandlerBase.h>
+#include <Components/ExtraClasses/Containers/Handler.h>
 
 using namespace ExtraClasses;
 
-using TestHandler_t = HandlerBase<std::string>;
+using TestHandler_t = Handler<std::string>;
 
-TEST(HandlerBase, RegularWork) {
+TEST(Handler, RegularWork) {
     const auto sampleText = "Test sample string";
     auto pSource = std::make_shared<std::string>(sampleText);
 
@@ -28,7 +28,7 @@ TEST(HandlerBase, RegularWork) {
     ASSERT_EQ(bool(hdlSource), hdlSource.isValid());
     try {
         auto pInvalidSource = hdlSource.get();
-        ASSERT_TRUE(pInvalidSource && false) << "Source must not be returned after invalidating";
+        ASSERT_EQ(pInvalidSource, nullptr) << "Source must be nullptr after invalidating";
     } catch (const std::runtime_error& ex) {
         // All's valid
     }
