@@ -113,7 +113,7 @@ public:
     // Assigment
     Handler& operator =(const Handler& _ohdl) noexcept = default;
     Handler& operator =(Handler&& _ohdl) noexcept = default;
-    Handler& operator =(value_t* _ovalue) noexcept { *m_pTarget = _ovalue; }
+    Handler& operator =(value_t* _ovalue) noexcept { *m_pTarget = _ovalue; return *this; }
 
 private:
     std::shared_ptr<value_t*> m_pTarget { std::make_shared<value_t*>(nullptr) };
