@@ -26,6 +26,13 @@ public:
         return m_value;
     }
 
+    ValueT& value() {
+        return m_editedValue;
+    }
+    const ValueT& value() const {
+        return m_editedValue;
+    }
+
     // Standard pointer-like actions
     ValueT* operator->() {
         return &m_editedValue;
