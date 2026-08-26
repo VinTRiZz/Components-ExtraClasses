@@ -3,8 +3,6 @@
 #include <memory>
 #include <stdexcept>
 
-#include <Components/Logger/Logger.h>
-
 namespace ExtraClasses {
 
 /**
