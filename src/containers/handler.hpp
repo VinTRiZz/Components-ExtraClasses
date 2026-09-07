@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <atomic>
 #include <stdexcept>
 
 namespace ExtraClasses {
@@ -111,7 +112,7 @@ public:
 
 private:
     value_t* m_pTarget {nullptr};
-    std::shared_ptr<bool> m_isValid { std::make_shared<bool>(false) };
+    std::shared_ptr<std::atomic_bool> m_isValid { std::make_shared<std::atomic_bool>(false) };
 
     void setPointer(value_t* pTarget) {
         *m_isValid = false;
