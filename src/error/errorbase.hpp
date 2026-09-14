@@ -2,11 +2,10 @@
 
 #include <string>
 
+#include "errorcodes.hpp"
+
 namespace ExtraClasses
 {
-
-const int ErrorCode_OK {0};
-const int ErrorCode_UNKNOWN_ERROR {1};
 
 /**
  * @brief The ErrorObject class Class for error describing
@@ -50,7 +49,7 @@ public:
     std::string getDetailText() const;
 
 private:
-    int                 m_errorCode {ErrorCode_OK};
+    int                 m_errorCode {ErrorCode::Ok};
     std::string         m_detailText;
     mutable std::string m_dumpText; // std::exception inherit workaround (see method what() )
 };

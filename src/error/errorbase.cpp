@@ -35,13 +35,13 @@ void ErrorBase::printSelf(int errCode, const std::string &detailText)
 }
 
 void ErrorBase::reset() {
-    setCode(ErrorCode_OK);
+    setCode(ErrorCode::Ok);
 }
 
 void ErrorBase::setCode(int errCode)
 {
     m_errorCode = errCode;
-    if (m_errorCode == ErrorCode_OK) {
+    if (m_errorCode == ErrorCode::Ok) {
         m_detailText.clear();
     }
 }
@@ -53,7 +53,7 @@ int ErrorBase::getCode() const
 
 bool ErrorBase::isOk() const
 {
-    return (m_errorCode == ErrorCode_OK);
+    return (m_errorCode == ErrorCode::Ok);
 }
 
 ErrorBase::operator bool() const
