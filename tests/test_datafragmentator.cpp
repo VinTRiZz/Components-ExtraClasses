@@ -2,7 +2,9 @@
 
 #include <Components/ExtraClasses/DataFragmentator.h>
 
+#include <algorithm>
 #include <random>
+
 uint64_t generateNumber(uint64_t min, uint64_t max)
 {
     if (min >= max) throw std::invalid_argument("generateNumber: max >= min");

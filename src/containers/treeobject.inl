@@ -2,6 +2,8 @@
 
 #include "treeobject.hpp"
 
+#include <algorithm>
+
 namespace ExtraClasses
 {
 
