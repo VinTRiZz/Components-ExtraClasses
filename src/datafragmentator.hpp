@@ -54,6 +54,7 @@ public:
      */
     bool compile();
     static std::vector<uint8_t> compile(const std::vector<std::vector<uint8_t> >& dataVectors);
+    static std::string compile(const std::vector<std::string >& dataVectors);
 
     /**
      * @brief split         Reverse of compile method. Splits data into fragments
@@ -62,6 +63,7 @@ public:
      */
     bool split(uint64_t splitDataSize); // TODO: Modify using allocators? --> split without allocating extra memory
     static std::vector<std::vector<uint8_t> > split(const std::vector<uint8_t>& data, uint64_t splitDataSize);
+    static std::vector<std::string > split(const std::string& data, uint64_t splitDataSize);
 
     bool operator <(const DataInfo& odi) const;
     bool operator ==(DataId_t id) const;

@@ -95,6 +95,28 @@ std::vector<uint8_t> DataInfo::compile(const std::vector<std::vector<uint8_t> > 
     return res;
 }
 
+std::string DataInfo::compile(const std::vector<std::string> &dataVectors)
+{
+    std::string res;
+
+    auto dataBeg = dataVectors.data();
+    auto currentVect = dataBeg;
+    while ((currentVect - dataBeg) < dataVectors.size()) {
+        res.reserve(currentVect->size());
+        std::copy_n(currentVect->data(), currentVect->size(), std::back_inserter(res));
+        ++currentVect;
+    }
+
+    auto totalSize = std::accumulate(dataVectors.begin(), dataVectors.end(), 0, [](auto curVal, auto& vect){
+        return (curVal + vect.size());
+    });
+    if (res.size() != totalSize) {
+        res.clear();
+    }
+
+    return res;
+}
+
 bool DataInfo::split(uint64_t splitDataSize)
 {
     if (!isValid()) {
@@ -141,6 +163,36 @@ std::vector<std::vector<uint8_t> > DataInfo::split(const std::vector<uint8_t> &d
         auto deltaSize = std::min(splitDataSize, uint64_t(dataEnd - curDataStart));
 
         std::vector<uint8_t> dataPart;
+        dataPart.reserve(deltaSize);
+        std::copy_n(curDataStart, deltaSize, std::back_inserter(dataPart));
+        curDataStart += deltaSize;
+
+        res.push_back(dataPart);
+    }
+
+    std::size_t totalDataSize {0};
+    for (const auto& fragment : res) {
+        totalDataSize += fragment.size();
+    }
+    if (totalDataSize != data.size()) {
+        res.clear();
+    }
+    return res;
+}
+
+std::vector<std::string> DataInfo::split(const std::string &data, uint64_t splitDataSize)
+{
+    std::vector< std::string > res;
+    res.reserve(data.size() / splitDataSize);
+
+    const auto dataSize = data.size();
+    auto dataEnd = data.data() + dataSize;
+    auto curDataStart = data.data();
+
+    while (curDataStart < dataEnd) {
+        auto deltaSize = std::min(splitDataSize, uint64_t(dataEnd - curDataStart));
+
+        std::string dataPart;
         dataPart.reserve(deltaSize);
         std::copy_n(curDataStart, deltaSize, std::back_inserter(dataPart));
         curDataStart += deltaSize;
