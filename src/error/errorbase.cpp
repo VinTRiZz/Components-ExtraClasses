@@ -26,7 +26,7 @@ void ErrorBase::printSelfStd() const
 
 void ErrorBase::printSelf()
 {
-    COMPLOG_ERROR(what());
+    COMPLOG_ERROR(m_errorCode, m_detailText);
 }
 
 void ErrorBase::printSelf(int errCode, const std::string &detailText)
