@@ -1,11 +1,7 @@
-if (COMPONENTS_IS_ENABLED_QT)
-    COMPONENTS_CONFIGURE_COMPONENT(ExtraClasses "1.0.0"
-        Qt5::Core
-    )
-else()
-    COMPONENTS_CONFIGURE_COMPONENT(ExtraClasses "1.0.0")
-endif()
-
+COMPONENTS_CONFIGURE_COMPONENT(ExtraClasses "1.0.0")
+COMPONENTS_LINK_COMPONENT(Components-ExtraClasses Core)
 COMPONENTS_LINK_COMPONENT(Components-ExtraClasses Logger)
-
+if (COMPONENTS_IS_ENABLED_QT)
+    target_link_libraries(Components-ExtraClasses PRIVATE Qt5::Core)
+endif()
 COMPONENTS_ADD_COMPONENT_TEST(ExtraClasses)
