@@ -53,6 +53,9 @@ public:
     void addNode(const ptr_type& pNode);
     void addNode(const DataT& nodeData);
 
+    // Remove node and return it
+    ptr_type takeNode(std::size_t index);
+
     // Remove node if it found
     bool removeNode(ptr_type pNode);
     bool removeNode(std::size_t index);

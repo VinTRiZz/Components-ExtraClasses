@@ -117,9 +117,11 @@ TEST(TreeNodePtr, BranchMoving) {
 
     // Move branch
     ASSERT_EQ(2, pRoot->getNodeCount());
-    pRoot->getNode(1)->getNode(0)->setParent(pRoot);
-    ASSERT_TRUE(pRoot->getNode(1)->getNode(0) == nullptr);
+    auto pNode = pRoot->getNode(1)->takeNode(0);
+    pNode->setParent(pRoot);
     ASSERT_EQ(3, pRoot->getNodeCount());
+    ASSERT_EQ(pNode, pRoot->getNode(pRoot->getNodeCount() - 1));
+    ASSERT_NE(pNode, pRoot->getNode(1)->getNode(0));
 
     // Setup other branch
     pRoot->addNode(++curNodeNo);
@@ -207,12 +209,12 @@ TEST(TreeNodePtr, RecursiveUp) {
     pRoot->setData(1);
 
     int curNodeNo {1};
-    pRoot->addNode(++curNodeNo);
-    pRoot->getNode(0)->addNode(++curNodeNo);
-    pRoot->getNode(0)->getNode(0)->addNode(++curNodeNo);
+    pRoot->addNode(++curNodeNo);                         // L1
+    pRoot->getNode(0)->addNode(++curNodeNo);             // L2
+    pRoot->getNode(0)->getNode(0)->addNode(++curNodeNo); // L3
 
     auto pDepthNode = pRoot->getNode(0)->getNode(0)->getNode(0);
-    pDepthNode->addNode(++curNodeNo);
+    pDepthNode->addNode(++curNodeNo);                    // L4
     pDepthNode = pDepthNode->getNode(0);
 
     int depth {0};

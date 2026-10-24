@@ -66,17 +66,27 @@ bool TreeNode<DataT>::callRecursive(FuncT&& func, Args&&... args) const {
 template <typename DataT>
 template <typename FuncT, typename... Args>
 bool TreeNode<DataT>::callBackwardRecursive(FuncT&& func, Args&&... args) {
+    if (func(this->shared_from_this())) {
+        return true;
+    }
     auto pParent = getParent();
-    if (pParent) { return func(pParent, std::forward<Args>(args)...); }
-    return func(this->shared_from_this());
+    if (pParent) {
+        return pParent->callBackwardRecursive(func, std::forward<Args>(args)...);
+    }
+    return false;
 }
 
 template <typename DataT>
 template <typename FuncT, typename... Args>
 bool TreeNode<DataT>::callBackwardRecursive(FuncT&& func, Args&&... args) const {
+    if (func(this->shared_from_this())) {
+        return true;
+    }
     auto pParent = getParent();
-    if (pParent) { return func(pParent, std::forward<Args>(args)...); }
-    return func(this->shared_from_this());
+    if (pParent) {
+        return pParent->callBackwardRecursive(func, std::forward<Args>(args)...);
+    }
+    return false;
 }
 
 
@@ -125,6 +135,20 @@ void TreeNode<DataT>::addNode(const DataT& nodeData) {
     auto pNode = std::make_shared<TreeNode<DataT> >(this->shared_from_this());
     pNode->setData(nodeData);
     return addNode(pNode);
+}
+
+template <typename DataT>
+typename TreeNode<DataT>::ptr_type TreeNode<DataT>::takeNode(std::size_t index) {
+    return std::visit([index, this](auto& cont) -> ptr_type {
+        if (index < cont.size()) {
+            auto targetPos = cont.begin();
+            std::advance(targetPos, index);
+            auto pRes = *targetPos;
+            cont.erase(targetPos);
+            return pRes;
+        }
+        return {};
+    }, m_children);
 }
 
 template <typename DataT>
