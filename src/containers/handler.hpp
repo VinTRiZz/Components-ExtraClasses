@@ -128,3 +128,13 @@ private:
 };
 
 } // namespace ExtraClasses
+
+// Hash reimplementation
+namespace std {
+template <typename T>
+struct hash<ExtraClasses::Handler<T> > {
+    std::size_t operator()(const ExtraClasses::Handler<T>& hdl) const noexcept {
+        return std::hash<const void*>{}(reinterpret_cast<const void*>(hdl.get()));
+    }
+};
+}
