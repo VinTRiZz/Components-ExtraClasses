@@ -19,6 +19,8 @@ Ok = 0,
 // Zero-codes - system, library, etc.
 // (defined by OS, binary, I/O or other sources)
 SystemUnknown = 1,
+SystemInterrupted,
+SystemFileError,
 
 
 // Logical
@@ -41,8 +43,9 @@ ProtocolUnknown = 30'000,
 // (invalid DB name, user, value, query, etc.)
 DatabaseUnknown = 40'000,
 DatabaseInvalidDriver,
-DatabaseInvalidDBName,
+DatabaseInvalidDatabase,
 DatabaseInvalidTable,
+DatabaseConnectionCreateFailed,
 DatabaseQueryExecutionFailed,
 
 
