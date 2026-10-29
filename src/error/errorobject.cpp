@@ -1,11 +1,11 @@
-#include "errorbase.hpp"
+#include "errorobject.hpp"
 
 #include <Components/Logger/Logger.h>
 
 namespace ExtraClasses
 {
 
-ErrorBase::ErrorBase(int errCode, const std::string &detailText) :
+ErrorObject::ErrorObject(int errCode, const std::string &detailText) :
     std::exception(),
     m_errorCode {errCode},
     m_detailText {detailText}
@@ -13,32 +13,32 @@ ErrorBase::ErrorBase(int errCode, const std::string &detailText) :
 
 }
 
-const char *ErrorBase::what() const noexcept
+const char *ErrorObject::what() const noexcept
 {
     m_dumpText = getErrorText() + (m_detailText.empty() ? std::string() : std::string(" (") + m_detailText + ")");
     return m_dumpText.c_str();
 }
 
-void ErrorBase::printSelfStd() const
+void ErrorObject::printSelfStd() const
 {
     std::cerr << what() << std::endl; // Logger can not be stated or invalid
 }
 
-void ErrorBase::printSelf()
+void ErrorObject::printSelf()
 {
     COMPLOG_ERROR(m_errorCode, m_detailText);
 }
 
-void ErrorBase::printSelf(int errCode, const std::string &detailText)
+void ErrorObject::printSelf(int errCode, const std::string &detailText)
 {
-    COMPLOG_ERROR(ErrorBase{}.errorCodeToText(errCode), detailText);
+    COMPLOG_ERROR(ErrorObject{}.errorCodeToText(errCode), detailText);
 }
 
-void ErrorBase::reset() {
+void ErrorObject::reset() {
     setCode(ErrorCode::Ok);
 }
 
-void ErrorBase::setCode(int errCode)
+void ErrorObject::setCode(int errCode)
 {
     m_errorCode = errCode;
     if (m_errorCode == ErrorCode::Ok) {
@@ -46,37 +46,37 @@ void ErrorBase::setCode(int errCode)
     }
 }
 
-int ErrorBase::getCode() const
+int ErrorObject::getCode() const
 {
     return m_errorCode;
 }
 
-bool ErrorBase::isOk() const
+bool ErrorObject::isOk() const
 {
     return (m_errorCode == ErrorCode::Ok);
 }
 
-ErrorBase::operator bool() const
+ErrorObject::operator bool() const
 {
     return isOk();
 }
 
-std::string ErrorBase::getErrorText() const
+std::string ErrorObject::getErrorText() const
 {
     return errorCodeToText(m_errorCode);
 }
 
-std::string ErrorBase::errorCodeToText(int errc) const
+std::string ErrorObject::errorCodeToText(int errc) const
 {
     return {};
 }
 
-void ErrorBase::setDetailText(const std::string &errText)
+void ErrorObject::setDetailText(const std::string &errText)
 {
     m_detailText = errText;
 }
 
-std::string ErrorBase::getDetailText() const
+std::string ErrorObject::getDetailText() const
 {
     return m_detailText;
 }

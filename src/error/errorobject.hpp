@@ -10,17 +10,17 @@ namespace ExtraClasses
 /**
  * @brief The ErrorObject class Class for error describing
  */
-class ErrorBase : public std::exception
+class ErrorObject : public std::exception
 {
 public:
-    ErrorBase() = default;
-    ErrorBase(ErrorBase&&) = default;
-    ErrorBase& operator =(ErrorBase&&) = default;
+    ErrorObject() = default;
+    ErrorObject(ErrorObject&&) = default;
+    ErrorObject& operator =(ErrorObject&&) = default;
 
-    ErrorBase(const ErrorBase&) = default;
-    ErrorBase& operator =(const ErrorBase&) = default;
+    ErrorObject(const ErrorObject&) = default;
+    ErrorObject& operator =(const ErrorObject&) = default;
 
-    ErrorBase(int errCode, const std::string& detailText = {});
+    ErrorObject(int errCode, const std::string& detailText = {});
 
     // exception interface
     const char *what() const noexcept override;

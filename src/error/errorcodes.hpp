@@ -27,6 +27,11 @@ SystemFileError,
 // (invalid input, failed to proceed, etc.)
 LogicalUnknown = 10'000,
 LogicalInvalidValue,
+LogicalKeyGenerationFailed,
+LogicalEncryptionFailed,
+LogicalDecryptionFailed,
+LogicalHashFailed,
+LogicalEncodingFailed,
 
 
 // Interface
