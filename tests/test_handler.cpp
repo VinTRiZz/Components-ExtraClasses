@@ -8,7 +8,7 @@ using namespace ExtraClasses;
 
 using TestHandler_t = Handler<std::string>;
 
-TEST(Handler, RegularWork) {
+TEST(Components_ExtraClasses, HandlerRegularWork) {
     const auto sampleText = "Test sample string";
     auto pSource = std::make_shared<std::string>(sampleText);
 

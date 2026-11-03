@@ -20,7 +20,7 @@ uint64_t generateNumber(uint64_t min, uint64_t max)
     return uni(rng);
 }
 
-TEST(DataFragmentator, Regular) {
+TEST(Components_ExtraClasses, DataFragmentatorRegular) {
     ExtraClasses::DataFragmentator df;
 
     const uint64_t dataSize = 2000;
@@ -82,7 +82,7 @@ TEST(DataFragmentator, Regular) {
 }
 
 
-TEST(DataFragmentator, StaticFunctions) {
+TEST(Components_ExtraClasses, DataFragmentatorStaticFunctions) {
     const uint64_t dataSize = 2000;
     std::vector<uint8_t> data;
     data.reserve(dataSize);

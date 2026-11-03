@@ -6,7 +6,7 @@
 using Node_t = ExtraClasses::TreeNode<std::string>;
 using NodePtr_t = ExtraClasses::TreeNodePtr<std::string>;
 
-TEST(TreeNodePtr, RegularOperations) {
+TEST(Components_ExtraClasses, TreeObjectRegularOperations) {
     NodePtr_t pRoot = Node_t::create("");
 
     // Check data setting
@@ -40,7 +40,7 @@ TEST(TreeNodePtr, RegularOperations) {
 
 
 // ============================ BASIC OPERATIONS //
-TEST(TreeNodePtr, AddingNodes) {
+TEST(Components_ExtraClasses, TreeObjectAddingNodes) {
     NodePtr_t pRoot = Node_t::create("");
 
     // Add by value
@@ -73,7 +73,7 @@ TEST(TreeNodePtr, AddingNodes) {
     ASSERT_EQ("3", pRoot->getNode(2)->getData());
 }
 
-TEST(TreeNodePtr, RemovingNodes) {
+TEST(Components_ExtraClasses, TreeObjectRemovingNodes) {
     NodePtr_t pRoot = Node_t::create("");
 
     // Remove by value
@@ -104,7 +104,7 @@ TEST(TreeNodePtr, RemovingNodes) {
 
 
 // ============================ RECURSION //
-TEST(TreeNodePtr, BranchMoving) {
+TEST(Components_ExtraClasses, TreeObjectBranchMoving) {
     ExtraClasses::TreeNodePtr<int> pRoot = ExtraClasses::TreeNode<int>::create(0);
     pRoot->setData(1);
 
@@ -137,7 +137,7 @@ TEST(TreeNodePtr, BranchMoving) {
 }
 
 
-TEST(TreeNodePtr, RecursiveSameLayer) {
+TEST(Components_ExtraClasses, TreeObjectRecursiveSameLayer) {
     NodePtr_t pRoot = Node_t::create("");
 
     pRoot->setData("Test data");
@@ -177,7 +177,7 @@ TEST(TreeNodePtr, RecursiveSameLayer) {
 }
 
 
-TEST(TreeNodePtr, RecursiveDown) {
+TEST(Components_ExtraClasses, TreeObjectRecursiveDown) {
     ExtraClasses::TreeNodePtr<int> pRoot = ExtraClasses::TreeNode<int>::create(0);
     pRoot->setData(1);
 
@@ -204,7 +204,7 @@ TEST(TreeNodePtr, RecursiveDown) {
 }
 
 
-TEST(TreeNodePtr, RecursiveUp) {
+TEST(Components_ExtraClasses, TreeObjectRecursiveUp) {
     ExtraClasses::TreeNodePtr<int> pRoot = ExtraClasses::TreeNode<int>::create(0);
     pRoot->setData(1);
 
