@@ -26,6 +26,7 @@ SystemFileError,
 // Logical
 // (invalid input, failed to proceed, etc.)
 LogicalUnknown = 10'000,
+LogicalNotImplemented,
 LogicalInvalidValue,
 LogicalKeyGenerationFailed,
 LogicalEncryptionFailed,
